@@ -1,0 +1,1 @@
+"""Cover Auto application package."""

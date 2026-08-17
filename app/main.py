@@ -1,0 +1,80 @@
+from __future__ import annotations
+
+import tempfile
+from datetime import datetime
+from pathlib import Path
+
+from fastapi import FastAPI, File, Form, HTTPException, Request, UploadFile
+from fastapi.responses import FileResponse, HTMLResponse
+from fastapi.staticfiles import StaticFiles
+from fastapi.templating import Jinja2Templates
+
+from app.cover_generator import GenerationResult, generate_covers
+from app.models import LayoutConfig
+
+BASE_DIR = Path(__file__).resolve().parent.parent
+OUTPUT_DIR = BASE_DIR / "output"
+
+app = FastAPI(title="Cover Auto", version="0.1.0")
+app.mount("/static", StaticFiles(directory=BASE_DIR / "app" / "static"), name="static")
+templates = Jinja2Templates(directory=BASE_DIR / "app" / "templates")
+
+LAST_RESULT: GenerationResult | None = None
+
+
+@app.get("/", response_class=HTMLResponse)
+def index(request: Request) -> HTMLResponse:
+    return templates.TemplateResponse("index.html", {"request": request})
+
+
+@app.post("/generate", response_class=HTMLResponse)
+async def generate(
+    request: Request,
+    files: list[UploadFile] = File(...),
+    spine_width_mm: float = Form(18.0),
+    gap_mm: float = Form(5.0),
+    spine_left_mm: float = Form(57.0),
+    margin_top_mm: float = Form(32.0),
+) -> HTMLResponse:
+    if not files:
+        raise HTTPException(status_code=400, detail="Upload minimal satu file PDF.")
+    if spine_width_mm <= 0 or gap_mm < 0:
+        raise HTTPException(status_code=400, detail="Ukuran punggung harus positif dan gap tidak boleh negatif.")
+
+    timestamp = datetime.utcnow().strftime("%Y%m%d_%H%M%S")
+    output_dir = OUTPUT_DIR / timestamp
+    output_dir.mkdir(parents=True, exist_ok=True)
+
+    saved_pdfs: list[Path] = []
+    with tempfile.TemporaryDirectory(prefix="cover-auto-") as temp_dir_name:
+        temp_dir = Path(temp_dir_name)
+        for upload in files:
+            if not upload.filename or not upload.filename.lower().endswith(".pdf"):
+                raise HTTPException(status_code=400, detail="Semua file harus berformat PDF.")
+            target = temp_dir / Path(upload.filename).name
+            target.write_bytes(await upload.read())
+            saved_pdfs.append(target)
+
+        config = LayoutConfig(
+            spine_width_mm=spine_width_mm,
+            gap_mm=gap_mm,
+            spine_left_mm=spine_left_mm,
+            margin_top_mm=margin_top_mm,
+        )
+        result = generate_covers(saved_pdfs, output_dir, config)
+
+    global LAST_RESULT
+    LAST_RESULT = result
+    return templates.TemplateResponse("result.html", {"request": request, "result": result})
+
+
+@app.get("/download/latest")
+def download_latest() -> FileResponse:
+    if LAST_RESULT is None or not LAST_RESULT.zip_path.exists():
+        raise HTTPException(status_code=404, detail="Belum ada hasil generate.")
+    return FileResponse(LAST_RESULT.zip_path, filename="cover_auto_output.zip")
+
+
+@app.get("/health")
+def health() -> dict[str, str]:
+    return {"status": "ok"}
