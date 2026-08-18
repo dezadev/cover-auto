@@ -1,0 +1,16 @@
+:root { font-family: Arial, sans-serif; color: #222; background: #f4f4f4; }
+body { margin: 0; padding: 32px; }
+.card { max-width: 860px; margin: 0 auto; background: #fff; padding: 28px; border-radius: 14px; box-shadow: 0 10px 30px #0001; }
+.wide { max-width: 1180px; }
+.grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; margin: 20px 0; }
+label { display: block; font-weight: 700; margin-top: 14px; }
+input { display: block; box-sizing: border-box; width: 100%; margin-top: 8px; padding: 10px; border: 1px solid #ccc; border-radius: 8px; }
+button, .button { display: inline-block; background: #1f6feb; color: #fff; border: 0; border-radius: 8px; padding: 12px 18px; text-decoration: none; font-weight: 700; cursor: pointer; }
+.download-panel { display: flex; justify-content: space-between; gap: 20px; align-items: center; padding: 16px; background: #f8fbff; border: 1px solid #dbe8ff; border-radius: 12px; margin: 20px 0; }
+.preview-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 18px; }
+.preview-card { border: 1px solid #ddd; border-radius: 12px; padding: 14px; background: #fff; }
+.preview-header { display: flex; justify-content: space-between; gap: 12px; align-items: center; margin-bottom: 12px; }
+.cover-preview { width: 100%; height: 420px; border: 1px solid #ccc; background: #fafafa; }
+.source-name { margin-bottom: 4px; font-weight: 700; word-break: break-word; }
+.muted { color: #666; font-size: 0.92rem; }
+@media (max-width: 640px) { .grid, .preview-grid { grid-template-columns: 1fr; } .download-panel { display: block; } body { padding: 16px; } }
