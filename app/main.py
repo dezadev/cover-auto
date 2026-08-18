@@ -5,7 +5,7 @@ from datetime import datetime
 from pathlib import Path
 
 from fastapi import FastAPI, File, Form, HTTPException, Request, UploadFile
-from fastapi.responses import FileResponse, HTMLResponse
+from fastapi.responses import FileResponse, HTMLResponse, Response
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 
@@ -25,6 +25,11 @@ def render_template(request: Request, template_name: str, context: dict | None =
     if context:
         page_context.update(context)
     return templates.TemplateResponse(request, template_name, page_context)
+
+
+def output_url(path: Path) -> str:
+    relative_path = path.resolve().relative_to(OUTPUT_DIR.resolve())
+    return f"/output/{relative_path.as_posix()}"
 
 
 LAST_RESULT: GenerationResult | None = None
@@ -73,7 +78,35 @@ async def generate(
 
     global LAST_RESULT
     LAST_RESULT = result
-    return render_template(request, "result.html", {"result": result})
+    preview_items = [
+        {
+            "page_number": cover.page_number,
+            "source_name": cover.source_name,
+            "title": cover.title,
+            "svg_url": output_url(cover.svg_path),
+        }
+        for cover in result.covers
+    ]
+    return render_template(
+        request,
+        "result.html",
+        {
+            "result": result,
+            "preview_items": preview_items,
+            "multipage_url": output_url(result.multipage_svg),
+        },
+    )
+
+
+@app.get("/output/{file_path:path}")
+def generated_output(file_path: str) -> FileResponse:
+    requested_path = (OUTPUT_DIR / file_path).resolve()
+    output_root = OUTPUT_DIR.resolve()
+    if output_root != requested_path and output_root not in requested_path.parents:
+        raise HTTPException(status_code=404, detail="File output tidak ditemukan.")
+    if not requested_path.is_file():
+        raise HTTPException(status_code=404, detail="File output tidak ditemukan.")
+    return FileResponse(requested_path)
 
 
 @app.get("/download/latest")
@@ -81,6 +114,11 @@ def download_latest() -> FileResponse:
     if LAST_RESULT is None or not LAST_RESULT.zip_path.exists():
         raise HTTPException(status_code=404, detail="Belum ada hasil generate.")
     return FileResponse(LAST_RESULT.zip_path, filename="cover_auto_output.zip")
+
+
+@app.get("/favicon.ico", include_in_schema=False)
+def favicon() -> Response:
+    return Response(status_code=204)
 
 
 @app.get("/health")

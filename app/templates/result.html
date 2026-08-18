@@ -7,17 +7,33 @@
   <link rel="stylesheet" href="/static/styles.css">
 </head>
 <body>
-  <main class="card">
-    <h1>Hasil Generate</h1>
-    <p>{{ result.covers|length }} cover berhasil dibuat.</p>
-    <p><a class="button" href="/download/latest">Download ZIP</a></p>
-    <h2>Daftar Page</h2>
-    <ol>
-      {% for cover in result.covers %}
-      <li><strong>Page {{ cover.page_number }}</strong> — {{ cover.source_name }}<br><small>{{ cover.title }}</small></li>
+  <main class="card wide">
+    <h1>Preview Cover</h1>
+    <p>{{ result.covers|length }} cover berhasil dibuat. Cek preview di bawah ini sebelum download ZIP.</p>
+
+    <section class="download-panel">
+      <div>
+        <strong>File utama:</strong><br>
+        <a href="{{ multipage_url }}" target="_blank" rel="noopener">Buka SVG gabungan</a>
+      </div>
+      <a class="button" href="/download/latest">Download ZIP</a>
+    </section>
+
+    <h2>Preview Per Page</h2>
+    <div class="preview-grid">
+      {% for cover in preview_items %}
+      <article class="preview-card">
+        <div class="preview-header">
+          <strong>Page {{ cover.page_number }}</strong>
+          <a href="{{ cover.svg_url }}" target="_blank" rel="noopener">Buka SVG</a>
+        </div>
+        <object class="cover-preview" data="{{ cover.svg_url }}" type="image/svg+xml" aria-label="Preview page {{ cover.page_number }}"></object>
+        <p class="source-name">{{ cover.source_name }}</p>
+        <small>{{ cover.title }}</small>
+      </article>
       {% endfor %}
-    </ol>
-    <p class="muted">File utama: {{ result.multipage_svg }}</p>
+    </div>
+
     <p><a href="/">Generate lagi</a></p>
   </main>
 </body>
