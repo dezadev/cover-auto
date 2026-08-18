@@ -1,0 +1,24 @@
+<!doctype html>
+<html lang="id">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Hasil Cover Auto</title>
+  <link rel="stylesheet" href="/static/styles.css">
+</head>
+<body>
+  <main class="card">
+    <h1>Hasil Generate</h1>
+    <p>{{ result.covers|length }} cover berhasil dibuat.</p>
+    <p><a class="button" href="/download/latest">Download ZIP</a></p>
+    <h2>Daftar Page</h2>
+    <ol>
+      {% for cover in result.covers %}
+      <li><strong>Page {{ cover.page_number }}</strong> — {{ cover.source_name }}<br><small>{{ cover.title }}</small></li>
+      {% endfor %}
+    </ol>
+    <p class="muted">File utama: {{ result.multipage_svg }}</p>
+    <p><a href="/">Generate lagi</a></p>
+  </main>
+</body>
+</html>
