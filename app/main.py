@@ -19,12 +19,20 @@ app = FastAPI(title="Cover Auto", version="0.1.0")
 app.mount("/static", StaticFiles(directory=BASE_DIR / "app" / "static"), name="static")
 templates = Jinja2Templates(directory=BASE_DIR / "app" / "templates")
 
+
+def render_template(request: Request, template_name: str, context: dict | None = None) -> HTMLResponse:
+    page_context = {"request": request}
+    if context:
+        page_context.update(context)
+    return templates.TemplateResponse(request, template_name, page_context)
+
+
 LAST_RESULT: GenerationResult | None = None
 
 
 @app.get("/", response_class=HTMLResponse)
 def index(request: Request) -> HTMLResponse:
-    return templates.TemplateResponse("index.html", {"request": request})
+    return render_template(request, "index.html")
 
 
 @app.post("/generate", response_class=HTMLResponse)
@@ -65,7 +73,7 @@ async def generate(
 
     global LAST_RESULT
     LAST_RESULT = result
-    return templates.TemplateResponse("result.html", {"request": request, "result": result})
+    return render_template(request, "result.html", {"result": result})
 
 
 @app.get("/download/latest")
