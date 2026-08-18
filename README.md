@@ -2,7 +2,70 @@
 
 Aplikasi web desktop lokal untuk membuat template cover hardcover massal dari banyak file PDF.
 
-Fitur utama:
+## Cara Paling Mudah Menjalankan
+
+### Windows
+
+1. Install Python dari <https://www.python.org/downloads/>.
+2. Saat install Python, centang **Add Python to PATH**.
+3. Klik dua kali file:
+
+```text
+mulai_windows.bat
+```
+
+Launcher akan otomatis:
+
+- membuat folder `.venv`,
+- menginstall dependency,
+- menjalankan server lokal,
+- membuka browser ke `http://127.0.0.1:8000`.
+
+### Linux / macOS
+
+Jalankan:
+
+```bash
+./mulai_linux_mac.sh
+```
+
+Atau:
+
+```bash
+python3 run_app.py
+```
+
+## Jika Launcher Otomatis Gagal
+
+Gunakan langkah manual berikut dari folder project:
+
+```bash
+python -m venv .venv
+```
+
+Windows:
+
+```bat
+.venv\Scripts\activate
+pip install -r requirements.txt
+python -m uvicorn app.main:app --host 127.0.0.1 --port 8000
+```
+
+Linux / macOS:
+
+```bash
+source .venv/bin/activate
+pip install -r requirements.txt
+python -m uvicorn app.main:app --host 127.0.0.1 --port 8000
+```
+
+Kemudian buka:
+
+```text
+http://127.0.0.1:8000
+```
+
+## Fitur Utama
 
 - Area kerja A3+ berukuran 297 x 430 mm.
 - Lebar punggung buku dapat diatur manual per batch.
@@ -30,42 +93,23 @@ cover-auto/
 │       └── result.html
 ├── input_pdfs/              # Letakkan file PDF sumber di sini bila ingin memakai folder input
 ├── output/                  # Hasil generate disimpan di sini
+├── mulai_windows.bat        # Klik dua kali di Windows
+├── mulai_linux_mac.sh       # Launcher Linux/macOS
+├── run_app.py               # Launcher Python otomatis
+├── requirements.txt         # Daftar dependency untuk pip
 ├── pyproject.toml
 └── README.md
 ```
 
-## Instalasi
+## Cara Pakai Aplikasi
 
-Python yang ditargetkan adalah Python 3.14.
-
-```bash
-python3.14 -m venv .venv
-source .venv/bin/activate
-pip install -e .
-```
-
-Jika Python 3.14 belum tersedia, versi Python modern yang kompatibel dengan dependensi FastAPI juga dapat digunakan untuk pengembangan.
-
-## Menjalankan Aplikasi
-
-```bash
-uvicorn app.main:app --reload
-```
-
-Buka browser ke:
-
-```text
-http://127.0.0.1:8000
-```
-
-## Cara Pakai
-
-1. Upload banyak file PDF.
-2. Atur lebar punggung sesuai tebal buku.
-3. Atur gap punggung ke cover depan bila diperlukan; default 5 mm.
-4. Klik **Generate Cover**.
-5. Download ZIP hasil generate.
-6. Buka file `cover_auto_multipage.svg` di CorelDRAW 17, cek tiap page/group, lalu simpan sebagai `.cdr`.
+1. Jalankan aplikasi memakai `mulai_windows.bat`, `./mulai_linux_mac.sh`, atau `python3 run_app.py`.
+2. Upload banyak file PDF.
+3. Atur lebar punggung sesuai tebal buku.
+4. Atur gap punggung ke cover depan bila diperlukan; default 5 mm.
+5. Klik **Generate Cover**.
+6. Download ZIP hasil generate.
+7. Buka file `cover_auto_multipage.svg` di CorelDRAW 17, cek tiap page/group, lalu simpan sebagai `.cdr`.
 
 ## Output
 
